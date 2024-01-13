@@ -1,8 +1,10 @@
 import http from 'http'
 import app from './src/app.js'
+import dotenv from 'dotenv'
 import socketSever from './src/Socket/index.js'
-import './src/Config/db-config.js'
+import './src/Config/Mongo.js'
 
+dotenv.config()
 
 const server =http.createServer(app)
 
