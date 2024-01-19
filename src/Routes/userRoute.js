@@ -4,7 +4,7 @@ import {
 	createUser,
 	sendOtp,
 	userLogin,
-} from '../Controller/userAth.js';
+} from '../Controller/Auth.js';
 const userRoute = express.Router();
 userRoute.post('/user/register', createUser);
 userRoute.post('/user/login', userLogin);

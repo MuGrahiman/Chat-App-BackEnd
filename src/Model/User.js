@@ -1,13 +1,33 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const userSchema = mongoose.Schema({
 	userName: { type: String, unique: true, required: true },
+	email: { type: String, unique: true, required: true },
 	password: { type: String, minlength: 8, required: true },
 	firstName: { type: String, required: true },
 	lastName: { type: String, required: true },
-	// phoneNo: { type: Number, unique: true, required: true },
-	emailId: { type: String, unique: true, required: true },
-	authorization: { type: String, default: 'pending', required: true }, //authorization:  'pending' | 'verified' | 'blocked'
+	profilePic: {
+		type: String,
+		default:
+			"https://w7.pngwing.com/pngs/831/88/png-transparent-user-profile-computer-icons-user-interface-mystique-miscellaneous-user-interface-design-smile-thumbnail.png",
+	},
+	followings: [
+		{
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "User",
+		},
+	],
+	followers: [
+		{
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "User",
+		},
+	],
+	chat: {
+		type: mongoose.Schema.Types.ObjectId,
+		ref: "Chat",
+	},
+	authorization: { type: String, default: "pending", required: true }, //authorization:  'pending' | 'verified' | 'blocked'
 });
 
-export default mongoose.model('User', userSchema);
+export default mongoose.model("User", userSchema);
