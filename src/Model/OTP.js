@@ -1,11 +1,16 @@
 import mongoose from 'mongoose';
 
 const otpSchema = mongoose.Schema(
-	{
-		userId: { type: mongoose.Types.ObjectId, required: true },
-		otp: { type: Number, required: true, expires: 600 },
-	},
-	{ timestamps: true }
+  {
+    userId: { type: mongoose.Types.ObjectId, required: true },
+    otp: { type: Number, required: true },
+    expireAt: { type: Date, default: Date.now, expires: 600 }, // expire after 10 min
+  },
+  { timestamps: true }
 );
 
-export default mongoose.model('Otp', otpSchema);
+const Otp = mongoose.model('Otp', otpSchema);
+
+Otp.collection.createIndex({ expireAt: 1 }, { expireAfterSeconds: 600 });
+
+export default Otp; 
