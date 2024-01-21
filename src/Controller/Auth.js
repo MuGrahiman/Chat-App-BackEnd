@@ -12,9 +12,9 @@ export const createUser = async (req, res) => {
 		const existMail = await userModel.findOne({ email });
 		console.log("existName" + existName + " " + "existMail" + existMail);
 		console.log("existUser" + existUser);
-		if (existUser && existUser.authorization === "pending") {
-			res.redirect(`/api/otp/${existUser._id}`);
-		}
+		if (existUser && existUser.authorization === "pending")
+			return res.redirect(`/api/otp/${existUser._id}`);
+
 		if (existName || existMail)
 			return res.status(404).json({ message: "data already exist" });
 
@@ -82,15 +82,27 @@ export const sendOtp = async (req, res) => {
 
 export const checkOtp = async (req, res) => {
 	try {
-		console.log(`In the checkOtp with Id ${req.params}`);
-		const otp = await OTPModel.findById(req.params.id);
-		if (!otp) return res.status(404).json({ message: "otp not verified" });
-		const existUser = await userModel.findById(otp.userId);
+		console.log(`In the checkOtp with Id: ${req.params.id}`);
+		console.log(req.body);
+		if (!req.params.id) return res.status(404).json({ message: "id required" });
+
+		const OTP = await OTPModel.findById(req.params.id);
+		console.log(OTP);
+		if (!OTP)
+			return res
+				.status(404)
+				.json({ message: "OTP not found . please register once more" });
+		if (OTP.otp != req.body.otp)
+			return res.status(404).json({ message: "otp not verified" });
+
+		const existUser = await userModel.findById(OTP.userId);
+		console.log(existUser);
 		if (!existUser)
 			return res.status(404).json({ message: "user not verified" });
+
 		existUser.authorization = "verified";
 		await existUser.save();
-		await chatModel.create({userId:existUser._id}).
+		await chatModel.create({ userId: existUser._id });
 		res.status(200).json({ success: true });
 	} catch (error) {
 		console.log(error);
@@ -111,7 +123,7 @@ export const searchUser = async (req, res) => {
 		const user = await userModel
 			.find(isUser)
 			.find({ _id: { $ne: req.user._id } });
-			
+
 		return res.json(user);
 	} catch (error) {
 		console.log(error);
