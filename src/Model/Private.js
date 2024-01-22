@@ -18,4 +18,4 @@ const privateSchema = mongoose.Schema(
 	{ timestamps: true }
 );
 
-export default mongoose.model("Conversation", privateSchema);
+export default mongoose.model("Private", privateSchema);

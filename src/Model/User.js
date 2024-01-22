@@ -23,9 +23,11 @@ const userSchema = mongoose.Schema({
 			ref: "User",
 		},
 	],
-	chat: {
+	contact: {
 		type: mongoose.Schema.Types.ObjectId,
-		ref: "Chat",
+		ref: "Contact",
+		unique: true,
+		required: true,
 	},
 	authorization: { type: String, default: "pending", required: true }, //authorization:  'pending' | 'verified' | 'blocked'
 });

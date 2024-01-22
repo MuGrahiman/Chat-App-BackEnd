@@ -30,4 +30,4 @@ const groupSchema = mongoose.Schema(
 	{ timestamps: true }
 );
 
-export default mongoose.model("Conversation", groupSchema);
+export default mongoose.model("Group", groupSchema);

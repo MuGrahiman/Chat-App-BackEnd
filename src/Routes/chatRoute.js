@@ -1,4 +1,4 @@
-import express from 'express'
-const chatRoute = express.Router()
+import express from "express";
+const chatRoute = express.Router();
 
-chatRoute
+export default chatRoute;
