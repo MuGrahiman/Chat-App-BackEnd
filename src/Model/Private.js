@@ -17,5 +17,6 @@ const privateSchema = mongoose.Schema(
 	},
 	{ timestamps: true }
 );
+const PrivateModel = mongoose.model("Private", privateSchema);
 
-export default mongoose.model("Private", privateSchema);
+export default PrivateModel;

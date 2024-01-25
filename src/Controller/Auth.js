@@ -1,6 +1,6 @@
 import OTP from "../Helpers/OTP.js";
 import userModel from "../Model/User.js";
-import chatModel from "../Model/Chat.js";
+import contactModel from "../Model/Contacts.js";
 import OTPModel from "../Model/OTP.js";
 import Auth from "../Helpers/Auth.js";
 
@@ -100,9 +100,10 @@ export const checkOtp = async (req, res) => {
 		if (!existUser)
 			return res.status(404).json({ message: "user not verified" });
 
+		const contact = await contactModel.create({ userId: existUser._id });
 		existUser.authorization = "verified";
+		existUser.contact = contact._id;
 		await existUser.save();
-		await chatModel.create({ userId: existUser._id });
 		res.status(200).json({ success: true });
 	} catch (error) {
 		console.log(error);
@@ -123,6 +124,19 @@ export const searchUser = async (req, res) => {
 		const user = await userModel
 			.find(isUser)
 			.find({ _id: { $ne: req.user._id } });
+
+		return res.json(user);
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({ message: error.message || "something went wrong" });
+	}
+};
+
+export const getAllUser = async (req, res) => {
+	console.log(req.userId);
+	try {
+		const user = await userModel.find({ _id: { $ne: req.userId } });
+		console.log(user && user.length);
 
 		return res.json(user);
 	} catch (error) {

@@ -10,12 +10,13 @@ const auth = async (req, res, next) => {
 
 		const decodeData = await Auth.CheckToken(token);
 		if (!decodeData) throw new Error("Not an valid Token");
-
-		req.userId = decodeData?._id;
+		console.log(`decodeData in middleware `);
+		console.log(decodeData);
+		req.userId = decodeData?.id;
 		next();
 	} catch (error) {
 		console.log(error);
-		res.status(400).json("Invalid Credentials");
+		res.status(400).json(error.message);
 	}
 };
 export default auth;

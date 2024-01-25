@@ -11,23 +11,9 @@ const userSchema = mongoose.Schema({
 		default:
 			"https://w7.pngwing.com/pngs/831/88/png-transparent-user-profile-computer-icons-user-interface-mystique-miscellaneous-user-interface-design-smile-thumbnail.png",
 	},
-	followings: [
-		{
-			type: mongoose.Schema.Types.ObjectId,
-			ref: "User",
-		},
-	],
-	followers: [
-		{
-			type: mongoose.Schema.Types.ObjectId,
-			ref: "User",
-		},
-	],
 	contact: {
 		type: mongoose.Schema.Types.ObjectId,
 		ref: "Contact",
-		unique: true,
-		required: true,
 	},
 	authorization: { type: String, default: "pending", required: true }, //authorization:  'pending' | 'verified' | 'blocked'
 });

@@ -3,6 +3,8 @@ import cors from 'cors';
 import morgan from 'morgan';
 import userRoute from "./Routes/userRoute.js";
 import chatRoute from "./Routes/chatRoute.js";
+import contactRoute from "./Routes/contactRoute.js";
+import  AuthProtector  from './Middleware/Auth.js';
 
 const app = express();
 app.use(express.json());
@@ -14,5 +16,6 @@ app.get('/', (req, res) => {
 });
 app.use('/api', userRoute);
 app.use("/api/chat", chatRoute);
+app.use("/api/contact",AuthProtector, contactRoute);
 
 export default app;
