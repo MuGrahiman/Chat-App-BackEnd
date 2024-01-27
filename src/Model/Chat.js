@@ -4,7 +4,7 @@ const chatSchema = mongoose.Schema(
 	{
 		type: {
 			type: String,
-			enum: ["private", "group"],
+			enum: ["Private", "Group"],
 			required: true,
 		},
 		recipients: [

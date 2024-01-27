@@ -15,7 +15,7 @@ app.get('/', (req, res) => {
 	res.send('<h1>Hello world</h1>');
 });
 app.use('/api', userRoute);
-app.use("/api/chat", chatRoute);
+app.use("/api/chat", AuthProtector, chatRoute);
 app.use("/api/contact",AuthProtector, contactRoute);
 
 export default app;

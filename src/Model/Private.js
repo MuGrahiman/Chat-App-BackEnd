@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 const privateSchema = mongoose.Schema(
 	{
+		// name: { type: String, required: true },
 		participants: [
 			{
 				type: mongoose.Schema.Types.ObjectId,
@@ -17,6 +18,5 @@ const privateSchema = mongoose.Schema(
 	},
 	{ timestamps: true }
 );
-const PrivateModel = mongoose.model("Private", privateSchema);
 
-export default PrivateModel;
+export default mongoose.model("Private", privateSchema);

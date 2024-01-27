@@ -3,16 +3,22 @@ import mongoose from "mongoose";
 const contactSchema = mongoose.Schema({
 	userId: { type: mongoose.Types.ObjectId, ref: "User", unique: true },
 	chatList: [
+		// {
+		// 	type: mongoose.Schema.Types.ObjectId,
+		// 	ref: 'Chat'
+		// },
 		{
 			_id: false,
 			type: {
 				type: String,
-				enum: ["private", "group"],
+				enum: ["Private", "Group"],
 				required: true,
 			},
 			chat: {
 				type: mongoose.Schema.Types.ObjectId,
-				refPath: "chatList.$.type",
+				ref: function () {
+					return this.type;
+				},
 			},
 		},
 	],

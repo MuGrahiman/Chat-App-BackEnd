@@ -1,8 +1,9 @@
 import mongoose from "mongoose";
 import contactModel from "../Model/Contacts.js";
 import userModel from "../Model/User.js";
-import PrivateModel from "../Model/Private.js";
+import privateModel from "../Model/Private.js";
 import groupModel from "../Model/Group.js";
+import chatModel from "../Model/Chat.js";
 
 export const getAllUserContacts = async (req, res) => {
 	try {
@@ -10,17 +11,36 @@ export const getAllUserContacts = async (req, res) => {
 		const { userId } = req;
 		if (!userId) res.status(400).json({ message: "User not found" });
 		const user = new mongoose.Types.ObjectId(userId);
+		const populateOptions = [
+			{
+				path: "chatList",
+				populate: {
+					path: "chat",
+					populate: {
+						path: "participants",
+					},
+				},
+			},
+			{ path: "followings" },
+			{ path: "followers" },
+		];
+
 		const contacts = await contactModel
 			.findOne({ userId: user })
-			.populate("chatList.chat")
-			.populate("followings")
-			.populate("followers");
-		const populateOptions = [
-			{ path: "chatList.chat", model: "Private" }, // Replace "Private" with your actual model name
-			{ path: "chatList.chat", model: "Group" }, // Replace "Group" with your actual model name
-		];
-		const cntctDetail = await contactModel.populate(contacts, populateOptions);
-		console.log(cntctDetail);
+			.populate(populateOptions);
+		console.log(contacts);
+		// console.log(await contacts.chatList.populate('chat'));
+
+		// const contacts = await contactModel
+		// 	.findOne({ userId: user })
+		// 	.populate({path:"chat",model:'type'})
+		// 	.populate("followings")
+		// 	.populate("followers");
+		// const Chats = await contacts.chatList.populate('chat');
+
+		// const cntctDetail = await contactModel.populate(contacts, populateOptions);
+		// console.log(cntctDetail.chatList);
+		console.log(contacts.chatList[0]);
 		res.status(200).json({
 			contacts: contacts.chatList,
 			followings: contacts.followings,
@@ -131,19 +151,20 @@ export const toggleFollowStatus = async (req, res) => {
 		} else targetUserContact.followers.push(currentUserId);
 
 		const participantIds = [currentUserId, targetUserId];
-		const existPrivateChat = await PrivateModel.find({
+		const existPrivateChat = await privateModel.find({
 			participants: { $all: participantIds },
 		});
+console.log(existPrivateChat)
 		if (!existPrivateChat[0]) {
-			const privateChat = await PrivateModel.create({
+			const privateChat = await privateModel.create({
 				participants: participantIds,
 			});
 			currentUserContact.chatList.push({
-				type: "private",
+				type: "Private",
 				chat: privateChat._id,
 			});
 			targetUserContact.chatList.push({
-				type: "private",
+				type: "Private",
 				chat: privateChat._id,
 			});
 		}
