@@ -135,8 +135,10 @@ export const searchUser = async (req, res) => {
 export const getAllUser = async (req, res) => {
 	console.log(req.userId);
 	try {
-		const user = await userModel.find({ _id: { $ne: req.userId } });
-		console.log(user && user.length);
+		const user = await userModel
+			.find({ _id: { $ne: req.userId } })
+			.populate("contact");
+		console.log(user );
 
 		return res.json(user);
 	} catch (error) {

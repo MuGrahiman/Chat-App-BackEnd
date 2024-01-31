@@ -1,5 +1,16 @@
 import express from "express";
-import { getAllUserContacts, toggleFollowStatus } from "../Controller/Contact.js";
+import {
+	getAllUserContacts,
+	toggleFollowStatus,
+	// joinGroup,
+	createGroup,
+	// getAllGroups,
+} from "../Controller/Contact.js";
 const contactRoute = express.Router();
-contactRoute.route("/").get(getAllUserContacts).patch(toggleFollowStatus);
+contactRoute.route("/user").get(getAllUserContacts).patch(toggleFollowStatus);
+contactRoute
+	.route("/group")
+	// .get(getAllGroups)
+	.post(createGroup)
+	// .patch(joinGroup);
 export default contactRoute;
