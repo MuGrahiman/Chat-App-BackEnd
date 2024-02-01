@@ -206,13 +206,13 @@ export const createGroup = async (req, res) => {
 		const contacts = await Promise.all(contactsPromises);
 		console.log(contacts);
 		const contactUpdates = contacts.map(async (contact) => {
-		    const groupExists = contact.chatList.some((chat) =>
-					chat.chat.equals(newGroup._id)
-				);
-				if (!groupExists) {
-					contact.chatList.push({ type: "Group", chat: newGroup._id });
-					await contact.save();
-				}
+			const groupExists = contact.chatList.some((chat) =>
+				chat.chat.equals(newGroup._id)
+			);
+			if (!groupExists) {
+				contact.chatList.push({ type: "Group", chat: newGroup._id });
+				await contact.save();
+			}
 		});
 		await Promise.all(contactUpdates);
 		console.log(contactUpdates);
@@ -246,10 +246,63 @@ export const createGroup = async (req, res) => {
 	}
 };
 
-// export const joinGroup = async (req, res) => {
-// 	try {
-// 	} catch (error) {
-// 		console.log(error);
-// 		res.status(500).json({ message: error.message || "Something went wrong" });
-// 	}
-// };
+export const exitGroup = async (req, res) => {
+	try {
+		const userId = req.userId;
+		const groupId = req.body.id;
+		if (!userId) res.status(400).json({ message: "User not Authorized" });
+		if (!groupId) res.status(400).json({ message: "Invalid data" });
+		const targetGrpId = new mongoose.Types.ObjectId(req.body.id);
+		const currentUserId = new mongoose.Types.ObjectId(req.userId);
+		const existGroup = groupModel.findById(targetGrpId);
+		if (!existGroup) res.status(400).json({ message: "Group is not exist" });
+		const existContact = contactModel.findOne({ userId: currentUserId });
+		if (!existContact)
+			res.status(400).json({ message: "Contact is not exist" });
+		// existGroup.participants.pull(currentUserId);
+		// const filteredParticipants = existGroup.participants.filter(
+		// 	(id) => id !== currentUserId
+		// );
+		// existGroup.participants = filteredParticipants;
+		// await existGroup.save();
+		// const filteredChats = existContact.chatList.filter(
+		// 	(data) => data.chat !== targetGrpId
+		// );
+		// existContact.chatList = filteredChats;
+		// existContact.chatList.pull({ type: "Group", chat: targetGrpId });
+
+		// await existContact.save();
+		await Promise.all([
+			existGroup.participants.pull(currentUserId),
+			existGroup.save(),
+			existContact.chatList.pull({ type: "Group", chat: targetGrpId }),
+			existContact.save(),
+		]);
+
+		const populateOptions = [
+			{
+				path: "chatList",
+				populate: {
+					path: "chat",
+					populate: {
+						path: "participants",
+					},
+				},
+			},
+			{ path: "followings" },
+			{ path: "followers" },
+		];
+		existContact.populate(populateOptions);
+		console.log(existContact);
+
+		console.log(existContact.chatList[0]);
+		res.status(200).json({
+			contacts: existContact.chatList,
+			followings: existContact.followings,
+			followers: existContact.followers,
+		});
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({ message: error.message || "Something went wrong" });
+	}
+};
