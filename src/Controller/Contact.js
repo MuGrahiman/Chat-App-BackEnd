@@ -42,65 +42,6 @@ export const getAllUserContacts = async (req, res) => {
 	}
 };
 
-// export const toggleFollowStatus = async (req, res) => {
-// 	try {
-// 		console.log(`in the toggleFollowStatus with id :${req.body.id}`);
-// 		const targetUserId = new mongoose.Types.ObjectId(req.body.id);
-// 		const currentUserId = new mongoose.Types.ObjectId(req.userId);
-// 		const targetUser = await userModel.findById(targetUserId);
-// 		console.log(targetUser);
-// 		if (!targetUser)
-// 			return res.status(404).json({ message: "target user Id is not Valid" });
-// 		const currentUser = await userModel.findById(currentUserId);
-// 		console.log(currentUser);
-// 		if (!currentUser)
-// 			return res.status(404).json({ message: "current user Id is not Valid" });
-
-// 		const targetUserContact = await contactModel.findOne({
-// 			userId: targetUserId,
-// 		});
-// 		if (!targetUserContact)
-// 			return res
-// 				.status(404)
-// 				.json({ message: "target user contact could`nt found" });
-
-// 		const currentUserContact = await contactModel.findOne({
-// 			userId: currentUserId,
-// 		});
-// 		if (!currentUserContact)
-// 			return res
-// 				.status(404)
-// 				.json({ message: "current user contact could`nt found" });
-
-// 		console.log(currentUserContact.followings.includes(targetUserId));
-// 		if (currentUserContact.followings.includes(targetUserId)) {
-// 			const updatedStatus = currentUserContact.followings.filter(
-// 				(id) => !id.equals(targetUserId)
-// 			);
-// 			currentUserContact.followings = updatedStatus;
-// 		} else currentUserContact.followings.push(targetUserId);
-
-// 		console.log(targetUserContact.followers.includes(currentUserId));
-// 		if (targetUserContact.followers.includes(currentUserId)) {
-// 			const updatedStatus = targetUserContact.followers.filter(
-// 				(id) => !id.equals(currentUserId)
-// 			);
-// 			targetUserContact.followers = updatedStatus;
-// 		} else targetUserContact.followers.push(currentUserId);
-
-// 		await currentUserContact.save();
-// 		await targetUserContact.save();
-// 		res.status(200).json({
-// 			contacts: currentUserContact.chatList,
-// 			followings: currentUserContact.followings,
-// 			followers: currentUserContact.followers,
-// 		});
-// 	} catch (error) {
-// 		console.log(error);
-// 		res.status(500).json({ message: error.message || "something went wrong" });
-// 	}
-// };
-
 export const toggleFollowStatus = async (req, res) => {
 	try {
 		const targetUserId = new mongoose.Types.ObjectId(req.body.id);
@@ -170,15 +111,6 @@ export const toggleFollowStatus = async (req, res) => {
 		res.status(500).json({ message: error.message || "Something went wrong" });
 	}
 };
-
-// export const getAllGroups = async (req, res) => {
-// 	try {
-// 		const groups = await groupModel.find()
-// 		res.status(200).json(groups)
-// 	} catch (error) {
-// 		console.log(error);
-// 		res.status(500).json({ message: error.message || "Something went wrong" });
-// 	}};
 
 export const createGroup = async (req, res) => {
 	try {
@@ -306,3 +238,84 @@ export const exitGroup = async (req, res) => {
 		res.status(500).json({ message: error.message || "Something went wrong" });
 	}
 };
+
+export const createChannel = async (req, res) => {
+	try {
+		console.log("create channel ");
+		console.log(req.body);
+		const userId = req.userId;
+		const channelName = req.body.name;
+		// const Ids = req.body.ids;
+		if (!userId) res.status(400).json({ message: "User not Authorized" });
+		if (!channelName ) res.status(400).json({ message: "Invalid data" });
+		const currentUserId = new mongoose.Types.ObjectId(userId);
+		// const existingData = await userModel.find({ _id: { $in: Ids } });
+		// console.log(existingData);
+		// if (!existingData || existingData.length !== Ids.length)
+		// 	res.status(404).json({ message: "Users are not valid" });
+		const newChannel = await groupModel.create({
+			chatName: channelName,
+			creator: userId,
+			admins: [userId],
+		});
+		// const contactsPromises = Ids.map((userId) =>
+		// 	contactModel.findOne({ userId })
+		// );
+		// const contacts = await Promise.all(contactsPromises);
+		// console.log(contacts);
+		// const contactUpdates = contacts.map(async (contact) => {
+		// 	const groupExists = contact.chatList.some((chat) =>
+		// 		chat.chat.equals(newChannel._id)
+		// 	);
+		// 	if (!groupExists) {
+		// 		contact.chatList.push({ type: "Group", chat: newChannel._id });
+		// 		await contact.save();
+		// 	}
+		// });
+		// await Promise.all(contactUpdates);
+		// console.log(contactUpdates);
+
+		const populateOptions = [
+			{
+				path: "chatList",
+				populate: {
+					path: "chat",
+					populate: {
+						path: "participants",
+					},
+				},
+			},
+			{ path: "followings" },
+			{ path: "followers" },
+		];
+
+		const userContacts = await contactModel.findOne({ userId: currentUserId });
+		userContacts.chatList.push({ type: "Channel", chat: newChannel._id });
+		await userContacts.save();
+		await userContacts.populate(populateOptions);
+		res.status(200).json({
+			contacts: userContacts.chatList,
+			followings: userContacts.followings,
+			followers: userContacts.followers,
+		});
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({ message: error.message || "Something went wrong" });
+	}
+};
+// export const getAllChannels = async (req, res) => {
+// 	try {
+// 		const groups = await groupModel.find()
+// 		res.status(200).json(groups)
+// 	} catch (error) {
+// 		console.log(error);
+// 		res.status(500).json({ message: error.message || "Something went wrong" });
+// 	}};
+// export const joinChannel = async (req, res) => {
+// 	try {
+// 		const groups = await groupModel.find()
+// 		res.status(200).json(groups)
+// 	} catch (error) {
+// 		console.log(error);
+// 		res.status(500).json({ message: error.message || "Something went wrong" });
+// 	}};

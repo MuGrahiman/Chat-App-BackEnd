@@ -11,7 +11,7 @@ const contactSchema = mongoose.Schema({
 			_id: false,
 			type: {
 				type: String,
-				enum: ["Private", "Group"],
+				enum: ["Private", "Group", "Channel"],
 				required: true,
 			},
 			chat: {
