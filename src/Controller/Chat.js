@@ -4,6 +4,30 @@ import privateModel from "../Model/Private.js";
 import userModel from "../Model/User.js";
 import contactModel from "../Model/Contacts.js";
 import groupModel from "../Model/Group.js";
+import chatTypeDetector from "../Utilities/chatUtils.js";
+
+// checking chat type
+export const checkChatType = async (req, res) => {
+	try {
+		const { chatId } = req.params;
+
+		console.log("🚀 ~ getChatDtl ~ chatId:", chatId);
+		if (!chatId) return res.status(400).json({ Message: `require chatId` });
+
+		const isValid = await mongoose.Types.ObjectId.isValid(chatId);
+		console.log("🚀 ~ getChatDtl ~ isValid:", isValid);
+		if (!isValid) return res.status(400).json({ Message: `invalid chatId` });
+
+		const chatType = await chatTypeDetector(chatId);
+		console.log("🚀 ~ getChatDtl ~ chatType:", chatType);
+
+		res.redirect(`/${chatType}/${chatId}`, req.method.toLowerCase());
+	} catch (error) {
+		console.log("🚀 ~ getChatDtl ~ error:", error);
+		res.status(500).json({ message: error.message || "Something went wrong" });
+	}
+};
+
 export const getAllMessages = async (req, res) => {
 	try {
 		console.log(`get all message of ${req.params.id}`);
@@ -41,17 +65,23 @@ export const getAllMessages = async (req, res) => {
 		];
 		const populatedData =
 			existPrivateChat && (await existPrivateChat.populate(populateOptions));
-		console.log(populatedData);
+
+		console.log("🚀 ~ getAllMessages ~ populatedData:", populatedData);
+
 		res
 			.status(200)
 			.json({ messages: populatedData ? populatedData.messages : null });
+			
 	} catch (error) {
 		console.log(error);
 		res.status(500).json({ message: error.message || "Something went wrong" });
 	}
 };
+
 export const postMessages = async (req, res) => {
 	//@description here got userId and chatId as opponent userId
+	//# check the chatId if yes or not also already exist in the contact list or not in message.
+
 	console.log(req.body);
 	const Text = req.body.text;
 	const targetId = req.params.id;
@@ -105,6 +135,7 @@ export const postMessages = async (req, res) => {
 				participants: participantIds,
 				messages: message._id,
 			});
+
 			currentUserContact.chatList.push({
 				type: "Private",
 				chat: privateChat._id,
@@ -113,23 +144,25 @@ export const postMessages = async (req, res) => {
 				type: "Private",
 				chat: privateChat._id,
 			});
+
 			await Promise.all([currentUserContact.save(), targetUserContact.save()]);
 			existChat = privateChat;
 		} else {
 			existPrivateChat.messages.push(message._id);
 			existChat = await existPrivateChat.save();
 		}
-		// res.status(200).json({
-		// 	contacts: currentUserContact.chatList,
-		// 	followings: currentUserContact.followings,
-		// 	followers: currentUserContact.followers,
-		// });
-
-		// const existChat = await privateModel.findById(chatId);
-
-		// if (!existChat)
-		// 	return res.status(404).json({ message: "Chat is not Valid" });
-		console.log(existChat);
+		const isChatIncluded = currentUserContact.chatList.some(
+			(chat) => chat.type === "Private" && chat.chat.equals(existChat._id)
+		);
+		console.log(isChatIncluded);
+		if (!isChatIncluded) {
+			currentUserContact.chatList.push({
+				type: "Private",
+				chat: existChat._id,
+			});
+			await currentUserContact.save();
+		}
+		// console.log(existChat);
 		const populateOptions = [
 			{ path: "participants" },
 			{
@@ -141,10 +174,10 @@ export const postMessages = async (req, res) => {
 			},
 		];
 		const populatedData = await existChat.populate(populateOptions);
-		console.log(populatedData);
+		// console.log(populatedData);
 		res.status(200).json({ messages: populatedData.messages });
 	} catch (error) {
-		console.log(error);
+		console.error(error);
 		res.status(500).json({ message: error.message || "Something went wrong" });
 	}
 };
@@ -195,6 +228,7 @@ export const getAllGrpMessages = async (req, res) => {
 		res.status(500).json({ message: error.message || "Something went wrong" });
 	}
 };
+
 export const postGrpMessages = async (req, res) => {
 	//@description here got userId and chatId as opponent userId
 	console.log(req.params);
@@ -229,10 +263,10 @@ export const postGrpMessages = async (req, res) => {
 		// if (!targetChatContact || !currentUserContact) {
 		// 	return res.status(404).json({ message: "Contact not found" });
 		// }
-const existChat = await groupModel.findById(targetChatId);
-if (!existChat) {
-	return res.status(404).json({ message: "Invalid user ID" });
-}
+		const existChat = await groupModel.findById(targetChatId);
+		if (!existChat) {
+			return res.status(404).json({ message: "Invalid user ID" });
+		}
 		const message = await messageModel.create({
 			text: Text,
 			sender: currentUserId,
@@ -240,7 +274,7 @@ if (!existChat) {
 		});
 
 		// const participantIds = [currentUserId, targetChatId];
-		
+
 		// console.log('existPrivateChat');
 		// console.log(existPrivateChat);
 		// let existChat;
@@ -261,8 +295,8 @@ if (!existChat) {
 		// 	await Promise.all([currentUserContact.save(), targetChatContact.save()]);
 		// 	existChat = privateChat;
 		// } else {
-			existChat.messages.push(message._id);
-			 await existChat.save();
+		existChat.messages.push(message._id);
+		await existChat.save();
 		// }
 		// res.status(200).json({
 		// 	contacts: currentUserContact.chatList,
