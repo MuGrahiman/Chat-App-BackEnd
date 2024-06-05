@@ -30,8 +30,10 @@ export const checkChatType = async (req, res) => {
 
 export const getAllMessages = async (req, res) => {
 	try {
-		console.log(`get all message of ${req.params.id}`);
 		const chatId = req.params.id;
+
+		console.log("🚀 ~ getAllMessages ~ chatId:", chatId);
+
 		const userId = req.userId;
 		const targetUserId = new mongoose.Types.ObjectId(req.params.id);
 		const currentUserId = new mongoose.Types.ObjectId(req.userId);

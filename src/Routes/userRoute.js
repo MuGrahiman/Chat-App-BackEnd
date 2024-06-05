@@ -4,12 +4,14 @@ import {
 	checkOtp,
 	createUser,
 	getAllUser,
+	getUser,
 	sendOtp,
 	userLogin,
 } from '../Controller/Auth.js';
 const userRoute = express.Router();
 userRoute.post('/user/register', createUser);
-userRoute.post('/user/login', userLogin);
 userRoute.route('/otp/:id').get(sendOtp).post(checkOtp);
-userRoute.get("/user/get",AuthProtector, getAllUser);
+userRoute.post('/user/login', userLogin);
+userRoute.get("/user/get/all", AuthProtector, getAllUser);
+userRoute.get("/user/get/:id", AuthProtector, getUser);
 export default userRoute;

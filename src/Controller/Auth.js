@@ -10,8 +10,7 @@ export const createUser = async (req, res) => {
 		const existUser = await userModel.findOne({ userName, email });
 		const existName = await userModel.findOne({ userName });
 		const existMail = await userModel.findOne({ email });
-		console.log("existName" + existName + " " + "existMail" + existMail);
-		console.log("existUser" + existUser);
+
 		if (existUser && existUser.authorization === "pending")
 			return res.redirect(`/api/otp/${existUser._id}`);
 
@@ -27,38 +26,12 @@ export const createUser = async (req, res) => {
 			email,
 		});
 		await newUser.save();
-		console.log("newUser");
-		console.log(newUser);
+
 		res.redirect(`/api/otp/${newUser._id}`);
 	} catch (error) {
 		console.log(error);
 		res.status(500).json({ message: error.message || "something went wrong" });
 	}
-};
-
-export const userLogin = async (req, res) => {
-	console.log(req.body);
-	const existUser = await userModel.findOne({ email: req.body.email });
-	console.log(existUser);
-	if (!existUser || existUser.authorization === "pending")
-		return res
-			.status(404)
-			.json({ message: "you are not authorized . please sign up" });
-	if (existUser && existUser.authorization === "blocked")
-		return res
-			.status(404)
-			.json({ message: "you are blocked by the admin . please contact admin" });
-
-	const verifiedPassword = await Auth.Decrypt(
-		req.body.password,
-		existUser.password
-	);
-	console.log(verifiedPassword);
-	if (!verifiedPassword)
-		return res.status(404).json({ message: "password couldn't match" });
-	const token = await Auth.CreateToken(existUser);
-	const { lastName, firstName, email, _id: id, userName } = existUser;
-	res.status(200).json({ id, userName, lastName, firstName, email, token });
 };
 
 export const sendOtp = async (req, res) => {
@@ -111,6 +84,31 @@ export const checkOtp = async (req, res) => {
 	}
 };
 
+export const userLogin = async (req, res) => {
+	console.log(req.body);
+	const existUser = await userModel.findOne({ email: req.body.email });
+	console.log(existUser);
+	if (!existUser || existUser.authorization === "pending")
+		return res
+			.status(404)
+			.json({ message: "you are not authorized . please sign up" });
+	if (existUser && existUser.authorization === "blocked")
+		return res
+			.status(404)
+			.json({ message: "you are blocked by the admin . please contact admin" });
+
+	const verifiedPassword = await Auth.Decrypt(
+		req.body.password,
+		existUser.password
+	);
+	console.log(verifiedPassword);
+	if (!verifiedPassword)
+		return res.status(404).json({ message: "password couldn't match" });
+	const token = await Auth.CreateToken(existUser);
+	const { lastName, firstName, email, _id: id, userName } = existUser;
+	res.status(200).json({ id, userName, lastName, firstName, email, token });
+};
+
 export const searchUser = async (req, res) => {
 	try {
 		const isUser = req.query.search
@@ -138,11 +136,67 @@ export const getAllUser = async (req, res) => {
 		const user = await userModel
 			.find({ _id: { $ne: req.userId } })
 			.populate("contact");
-		console.log(user );
+		console.log(user);
 
 		return res.json(user);
 	} catch (error) {
 		console.log(error);
 		res.status(500).json({ message: error.message || "something went wrong" });
+	}
+};
+
+export const getUser = async (req, res) => {
+	try {
+		console.log("getUser");
+		console.log(req.params.id);
+
+		if (!req.params.id) {
+			return res.status(400).json({ message: "ID is required" });
+		}
+
+	const user = await userModel
+		.findById({ _id: req.params.id })
+		.select("-_id -password -authorization -__v");
+
+		if (!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
+
+		console.log('user');
+		console.log(user);
+		const populatedUser = await user.populate({
+			path: "contact",
+			select: "-_id -userId -chatList -__v",
+			populate: [
+				{ path: "followingList" },
+				{ path: "followerList" },
+				{ path: "groupList" },
+				{ path: "subscribedList" },
+				{ path: "blockedList" },
+			],
+		});
+
+		console.log('populatedUser');
+		console.log(user);
+
+		const channelList =
+			(await userModel.find({ creator: req.params.id })) || [];
+
+		console.log("Profile");
+
+		const { contact, ...userDetails } = user.toObject();
+		const { blockedList, ...contactRest } = contact;
+
+		const result = {
+			userDetails,
+			channelList,
+			...contactRest,
+			...(req.userId === req.params.id && { blockedList }),
+		};
+
+		return res.json(result);
+	} catch (error) {
+		console.error(error);
+		return res.status(500).json({ message: "Something went wrong" });
 	}
 };

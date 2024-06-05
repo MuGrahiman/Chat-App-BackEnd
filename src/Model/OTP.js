@@ -4,7 +4,7 @@ const otpSchema = mongoose.Schema(
   {
     userId: { type: mongoose.Types.ObjectId, required: true },
     otp: { type: Number, required: true },
-    expireAt: { type: Date, default: Date.now, expires: 600 }, // expire after 10 min
+    expireAt: { type: Date, default: Date.now, expires: 6000 }, // expire after 10 min
   },
   { timestamps: true }
 );

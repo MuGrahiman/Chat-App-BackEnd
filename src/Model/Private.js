@@ -2,19 +2,17 @@ import mongoose from "mongoose";
 
 const privateSchema = mongoose.Schema(
 	{
-	
 		participants: [
 			{
 				type: mongoose.Schema.Types.ObjectId,
 				ref: "User",
 			},
 		],
-		messages: [
-			{
-				type: mongoose.Schema.Types.ObjectId,
-				ref: "Message",
-			},
-		],
+		chats: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Chat",
+		},
+		
 	},
 	{ timestamps: true }
 );

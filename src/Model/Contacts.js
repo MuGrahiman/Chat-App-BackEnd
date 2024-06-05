@@ -3,10 +3,6 @@ import mongoose from "mongoose";
 const contactSchema = mongoose.Schema({
 	userId: { type: mongoose.Types.ObjectId, ref: "User", unique: true },
 	chatList: [
-		// {
-		// 	type: mongoose.Schema.Types.ObjectId,
-		// 	ref: 'Chat'
-		// },
 		{
 			_id: false,
 			type: {
@@ -22,13 +18,31 @@ const contactSchema = mongoose.Schema({
 			},
 		},
 	],
-	followings: [
+	followingList: [
 		{
 			type: mongoose.Schema.Types.ObjectId,
 			ref: "User",
 		},
 	],
-	followers: [
+	followerList: [
+		{
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "User",
+		},
+	],
+	groupList: [
+		{
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Group",
+		},
+	],
+	subscribedList: [
+		{
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Channel",
+		},
+	],
+	blockedList: [
 		{
 			type: mongoose.Schema.Types.ObjectId,
 			ref: "User",
