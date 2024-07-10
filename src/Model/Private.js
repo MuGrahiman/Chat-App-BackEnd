@@ -8,7 +8,7 @@ const privateSchema = mongoose.Schema(
 				ref: "User",
 			},
 		],
-		chats: {
+		chat: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: "Chat",
 		},

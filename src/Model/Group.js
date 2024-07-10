@@ -29,7 +29,7 @@ const groupSchema = mongoose.Schema(
 			},
 		],
 
-		chats: {
+		chat: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: "Chat",
 		},

@@ -1,8 +1,8 @@
 import express from "express";
-import { getAllGrpMessages, getAllMessages, postGrpMessages, postMessages } from "../Controller/Chat.js";
+import { checkChatType, getAllGrpMessages, getAllMessages, getPrivateChat, postGrpMessages, postMessages, postPrivateChat } from "../Controller/Chat.js";
 const chatRoute = express.Router();
-chatRoute.route("/chat/:chatId").get(getAllMessages).post(postMessages);
-chatRoute.route("/private/:id").get(getAllMessages).post(postMessages);
+chatRoute.route("/:chatId").get(checkChatType).post(checkChatType);
+chatRoute.route("/private/:id").get(getPrivateChat).post(postPrivateChat);   
 chatRoute.route("/group/:id").get(getAllGrpMessages).post(postGrpMessages);
 chatRoute
 	.route("/channel/:id")

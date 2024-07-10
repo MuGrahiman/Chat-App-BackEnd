@@ -8,9 +8,8 @@ import {
 	joinChannel,
 	removeChat,
 	exitGroup,
-	checkConnection,
-	createConnection,
 } from "../Controller/Contact.js";
+import { checkConnection, createConnection } from "../Controller/Connection.js";
 
 const contactRoute = express.Router();
 contactRoute
@@ -28,5 +27,6 @@ contactRoute
 	.route(`/connection/:id`)
 	.get(checkConnection)
 	.post(createConnection);
+
 
 export default contactRoute;
